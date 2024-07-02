@@ -6,18 +6,19 @@ async function register(req, res) {
     const { phone, email, avatar, username, password, active } = req.body
 
     console.log(phone, email, avatar, username, password, active);
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const query = `INSERT INTO "user" (phone, email, avatar, username, password, active)
-                   VALUES ('${phone}','${email}', '${avatar}', '${username}', '${hashedPassword}', '${active}') RETURNING *`;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await client.query(query);
+        const query = `INSERT INTO "user" (phone, email, avatar, username, password, active)
+                       VALUES ('${phone}','${email}', '${avatar}', '${username}', '${hashedPassword}', '${active}') RETURNING *`;
 
-    if (result) {
+        const result = await client.query(query);
+
         return res.status(200).send(result);
+    } catch (e) {
+        return res.status(400).send(e.message);
     }
-
-    return res.status(400).send(result);
 }
 
 
