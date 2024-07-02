@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const router = require('./router/router');
-const client = require('./database');
+const router = require('./router/auth.router');
+const { dbConnection } = require('./database');
 
 app.use(cors({
     origin: ['*'],
@@ -10,6 +10,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use('/', router);
-client.dbConnection();
+dbConnection();
 
 app.listen(3000, () => console.log("app is running on port 3000"));
