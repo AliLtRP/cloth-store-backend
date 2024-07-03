@@ -22,7 +22,6 @@ app.use('/category', categoryRouter);
 app.use('/product', productRouter);
 app.use('/discount', discountRouter);
 app.use('/order', orderRouter);
-
 app.use('/voucher', voucherRouter);
 app.use('/banner', bannerRouter);
 app.use('/test', categoryToProductRouter);

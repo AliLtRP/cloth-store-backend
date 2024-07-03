@@ -13,13 +13,13 @@ async function createCategory(req, res) {
 
         const result = await client.query(query);
 
-        res.send({
+        return res.send({
             status: 200,
             date: result.rows[0]
         });
 
     } catch (e) {
-        res.status(501).send({
+        return res.status(501).send({
             success: false,
             error: e
         });

@@ -1,9 +1,9 @@
 const { client } = require('../database');
 
-async function discountRouter(req,res){
-    const {value,type,start_date,end_date,active}=req.body;
+async function discountRouter(req, res) {
+    const { value, type, start_date, end_date, active } = req.body;
 
-    try{
+    try {
 
         const query = `
         INSERT INTO "discount" (value,type,start_date,end_date,active)
@@ -13,10 +13,10 @@ async function discountRouter(req,res){
         await client.query(query)
         res.status(200).json({ message: 'Discount added successfully' });
 
-    } catch(error) {
+    } catch (error) {
         console.error('Error adding discount:', error);
-        res.status(500).json({ error: 'Failed to add discount' }); 
+        res.status(500).json({ error: 'Failed to add discount' });
     }
 }
 
-module.exports={discountRouter}
+module.exports = { discountRouter }
