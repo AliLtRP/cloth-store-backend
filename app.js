@@ -4,6 +4,8 @@ const cors = require('cors');
 const router = require('./router/auth.router');
 const categoryRouter = require('./router/category.router');
 const productRouter = require('./router/product.router');
+const discountRouter = require('./router/discount.router');
+const orderRouter = require("./router/order.router");
 const categoryToProductRouter = require('./router/categoryToProduct');
 const { dbConnection } = require('./database');
 
@@ -16,6 +18,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use('/', router);
 app.use('/category', categoryRouter);
 app.use('/product', productRouter);
+app.use('/discount', discountRouter);
+app.use('/order', orderRouter);
 app.use('/test', categoryToProductRouter);
 dbConnection();
 
