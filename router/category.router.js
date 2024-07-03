@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCategory, getCategory, updateCategory, getAllCategory } = require('../models/category');
+const { createCategory, getCategory, updateCategory, getAllCategory, deleteCategory } = require('../models/category');
 const router = express.Router();
 
 // get specific category by id
@@ -12,9 +12,9 @@ router.get('/all', getAllCategory);
 router.post('/', createCategory);
 
 // update category 
-router.patch('/', updateCategory);
+router.put('/', updateCategory);
 
 // soft delete category 
-router.delete('/', updateCategory);
+router.delete('/', deleteCategory);
 
 module.exports = router

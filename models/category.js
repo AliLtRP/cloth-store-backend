@@ -40,4 +40,8 @@ async function updateCategory(req, res) {
 
 }
 
-module.exports = { createCategory, getCategory, getAllCategory, updateCategory }
+async function deleteCategory(req, res) {
+
+}
+
+module.exports = { createCategory, getCategory, getAllCategory, updateCategory, deleteCategory }
