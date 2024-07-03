@@ -13,7 +13,7 @@ app.use(cors({
 app.use(express.json({ limit: "10mb" }));
 app.use('/', router);
 app.use('/category', categoryRouter);
-app.use('/', productRouter);
+app.use('/product', productRouter);
 dbConnection();
 
 app.listen(3000, () => console.log("app is running on port 3000"));
