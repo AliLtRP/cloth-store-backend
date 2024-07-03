@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/register', register);
-router.post('/login', isAuth, login);
+router.post('/login', login);
 
 
 module.exports = router;
