@@ -1,11 +1,9 @@
 const express = require('express');
-const { createCategoryToProduct } = require('../models/categoryToProduct');
+const { createCategoryToProduct, getAllProductsAttachToCategory } = require('../models/categoryToProduct');
 const router = express.Router();
 
 
-router.get('/', (req, res) => {
-    res.send('ok')
-});
+router.get('/', getAllProductsAttachToCategory);
 
 router.post('/', createCategoryToProduct);
 

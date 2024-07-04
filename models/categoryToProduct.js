@@ -29,8 +29,29 @@ async function createCategoryToProduct(req, res) {
     }
 }
 
-async function getCategoryToProduct(req, res) {
+async function getAllProductsAttachToCategory(req, res) {
+    const { id } = req.query;
 
+    try {
+        const query = `SELECT p.* FROM product as p
+                       JOIN categoryToProduct as ctp ON ctp.product_id=p.id
+                       JOIN category c ON ctp.category_id = c.id
+                       WHERE c.id = $1`;
+
+        const values = [id];
+
+        const result = await client.query(query, values);
+
+        return res.status(200).send({
+            success: true,
+            data: result.rows
+        });
+    } catch (e) {
+        return res.status(501).send({
+            success: false,
+            error: e
+        });
+    }
 }
 
 async function getCategoryToProduct(req, res) {
@@ -41,5 +62,9 @@ async function getCategoryToProduct(req, res) {
 
 }
 
+async function getCategoryToProduct(req, res) {
 
-module.exports = { createCategoryToProduct }
+}
+
+
+module.exports = { createCategoryToProduct, getAllProductsAttachToCategory, getCategoryToProduct }

@@ -24,7 +24,7 @@ app.use('/discount', discountRouter);
 app.use('/order', orderRouter);
 app.use('/voucher', voucherRouter);
 app.use('/banner', bannerRouter);
-app.use('/test', categoryToProductRouter);
+app.use('/category/products', categoryToProductRouter);
 
 dbConnection();
 
