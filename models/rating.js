@@ -13,7 +13,7 @@ async function createRating(req, res) {
 
         return res.status(200).send({
             success: true,
-            data: result.rows
+            data: result.rows[0]
         });
     } catch (e) {
         return res.status(501).send({
@@ -31,9 +31,34 @@ async function getRating(req, res) {
 
         const result = await client.query(query);
 
+        const getNumberOfRatings = `
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM rating
+        WHERE product_id = $1;
+    `;
+
+        const numberOfRatingsValues = [product_id];
+
+        const numberOfRatingsResult = await client.query(getNumberOfRatings, numberOfRatingsValues);
+
+        const v = numberOfRatingsResult.rows[0].user_count;
+        let avg = 0;
+        const k = 5;
+        const a = 3;
+
+        if (v > 0) {
+            avg = result.rows.reduce((sum, row) => sum + row.rate_value, 0);
+        }
+
+        const r = v > 0 ? avg / v : 0;
+
+        const rate = ((v * r) + (k * a)) / (v + k);
+
+        result.rows[0].rate_value = Math.round(rate);
+
         return res.status(200).send({
             success: true,
-            data: result.rows
+            data: result.rows[0]
         });
     } catch (e) {
         return res.status(501).send({
