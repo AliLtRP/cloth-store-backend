@@ -8,7 +8,7 @@ async function bannerRouter(req,res){
 
         const query=`
         INSERT INTO "banner" (title,img , description , priority ,type  , discount  ,products_ids,banners , active)
-        VALUE(${title},${img},${ description },${priority},${type},${discount},${products_ids},${banners},${active}) 
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) 
         RETURNING id;     
         `
         const values=[title,img , description , priority ,type  , discount  ,products_ids,banners , active];
@@ -34,9 +34,52 @@ async function getAllBanners(req,res){
 
 async function updateBanner(req,res){
 
+    const { id } = req.query;
+    const {title , img , description , priority , type , discount ,products_ids,banners , active}=req.body;
+
+    try{
+       const query=`
+       UPDATE "banner"
+       SET title = $1, img = $2, description = $3, priority = $4, type = $5, discount = $6, products_ids = $7, banners = $8, active = $9
+       WHERE id = $10
+       RETURNING id;
+       `;
+
+       const values = [title , img , description , priority , type , discount ,products_ids,banners , active , id];
+       const result = await client.query(query,values)
+
+       if (result.rowCount > 0) {
+        res.status(200).json({ message: 'banner updated successfully', id: result.rows[0].id });
+    } else {
+        res.status(404).json({ error: 'banner not found' });
+    }
+    }catch(error){
+
+        console.error('Error updating banner:', error);
+        res.status(500).json({ error: 'Failed to update banner' });
+
+    }
+}
+
+async function getBannerById(req,res){
+    const {id} = req.query;
+    try{
+        const query = 'SELECT * FROM "banner" WHERE id = $1';
+        const values = [id];
+        const result = await client.query(query, values);
+        
+        if(result.rows.length===0){
+            return res.status(404).json({message:'banner not found'});
+        }
+        res.status(200).json(result.rows[0]);
+    } catch(error) {
+        console.error('Error retrieving specific banner:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+
 }
 
 async function deleteBanner(req,res){
     
 }
-module.exports= {bannerRouter};
+module.exports= {bannerRouter,getAllBanners,updateBanner,getBannerById,deleteBanner};

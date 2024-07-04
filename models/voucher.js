@@ -1,17 +1,15 @@
 const { client } = require('../database');
 
-async function voucherRouter(req,res){
-
-    const {value , type , start_date , end_date ,max_amount , min_amount ,apply_over_discount,no_of_usage , users , first_order , active}=req.body;
+async function voucherRouter(req, res) {
+    const { value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active } = req.body;
 
     try {
-
-        const query=`
-        INSERT INTO "voucher" (value,type , start_date , end_date ,max_amount , min_amount ,apply_over_discount,no_of_usage , users , first_order , active)
-        VALUE(${value},${type},${start_date },${end_date},${max_amount},${min_amount},${apply_over_discount},${users},${first_order},${active}) 
-        RETURNING id;     
-        `
-        const values=[value,type , start_date , end_date ,max_amount , min_amount ,apply_over_discount,no_of_usage , users , first_order , active];
+        const query = `
+        INSERT INTO "voucher" (value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING id;
+        `;
+        const values = [value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active];
         const result = await client.query(query, values);
 
         res.status(201).json({ message: 'Voucher added successfully', voucherId: result.rows[0].id });
@@ -23,7 +21,7 @@ async function voucherRouter(req,res){
 
 async function getAllVouchers(req,res){
     try {
-        const query = 'SELECT * FROM vouchers';
+        const query = 'SELECT * FROM voucher';
         const result = await client.query(query);
 
         if(result.rows.length===0){
@@ -67,11 +65,11 @@ async function updateVoucher(req,res){
         RETURNING id;
         `; 
 
-        const values = [value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active, voucherId];
+        const values = [value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active, id];
         const result = await client.query(query, values);
 
         if (result.rowCount > 0) {
-            res.status(200).json({ message: 'Voucher updated successfully', voucherId });
+            res.status(200).json({ message: 'Voucher updated successfully' });
         } else {
             res.status(404).json({ error: 'Voucher not found' });
         }
@@ -85,4 +83,4 @@ async function deleteVoucher(req,res){
 
 }
 
-module.exports= {voucherRouter,getAllVouchers,getVoucherById};
+module.exports= {voucherRouter,getAllVouchers,getVoucherById,updateVoucher};

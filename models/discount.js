@@ -78,7 +78,6 @@ async function updateDiscount(req, res) {
 }
 
 async function deleteDiscount(req,res){
-
 }
 
 module.exports={discountRouter,getAllDiscount,getDiscountById,updateDiscount,deleteDiscount}
