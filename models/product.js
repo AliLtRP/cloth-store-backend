@@ -77,7 +77,8 @@ async function getAllProducts(req, res) {
 }
 
 async function updateProduct(req, res) {
-    const { id, name, img, description, price, stock, status, options, discount_id } = req.body;
+    const { id } = req.query;
+    const { name, img, description, price, stock, status, options, discount_id } = req.body;
 
     try {
         const query = `
@@ -111,7 +112,8 @@ async function updateProduct(req, res) {
 }
 
 async function deleteProduct(req, res) {
-    const { id, status } = req.body;
+    const { id } = req.query;
+    const { status } = req.body;
 
     try {
         const query = `

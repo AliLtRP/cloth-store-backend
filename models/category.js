@@ -68,7 +68,8 @@ async function getAllCategory(req, res) {
 }
 
 async function updateCategory(req, res) {
-    const { id, name, img, priority, active } = req.body;
+    const { id } = req.query;
+    const { name, img, priority, active } = req.body;
 
     try {
         const query = `UPDATE "category"
@@ -92,7 +93,8 @@ async function updateCategory(req, res) {
 }
 
 async function deleteCategory(req, res) {
-    const { id, status } = req.body;
+    const { id } = req.query;
+    const { status } = req.body;
 
     try {
         const query = `UPDATE "category"
