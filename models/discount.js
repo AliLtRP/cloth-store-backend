@@ -50,8 +50,35 @@ async function getDiscountById(req,res){
     }
 
 }
-async function updateDiscount(req,res){
+async function updateDiscount(req, res) {
+    const { id } = req.query;
+    const { value, type, start_date, end_date, active } = req.body;
+
+    try {
+        const query = `
+        UPDATE "discount"
+        SET value = $1, type = $2, start_date = $3, end_date = $4, active = $5
+        WHERE id = $6
+        RETURNING id;
+        `;
+
+        const values = [value, type, start_date, end_date, active, id];
+        const result = await client.query(query, values);
+
+        if (result.rowCount > 0) {
+            res.status(200).json({ message: 'Discount updated successfully', id: result.rows[0].id });
+        } else {
+            res.status(404).json({ error: 'Discount not found' });
+        }
+
+    } catch (error) {
+        console.error('Error updating discount:', error);
+        res.status(500).json({ error: 'Failed to update discount' });
+    }
+}
+
+async function deleteDiscount(req,res){
 
 }
 
-module.exports={discountRouter,getAllDiscount,getDiscountById}
+module.exports={discountRouter,getAllDiscount,getDiscountById,updateDiscount,deleteDiscount}
