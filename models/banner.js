@@ -21,4 +21,22 @@ async function bannerRouter(req,res){
     }
 }
 
+async function getAllBanners(req,res){
+    try {
+        const query = `SELECT * FROM "banner";`;
+        const result = await client.query(query);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error retrieving banners:', error);
+        res.status(500).json({ error: 'Failed to retrieve banners' });
+    }
+}
+
+async function updateBanner(req,res){
+
+}
+
+async function deleteBanner(req,res){
+    
+}
 module.exports= {bannerRouter};
