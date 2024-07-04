@@ -9,6 +9,7 @@ const orderRouter = require("./router/order.router")
 const voucherRouter = require("./router/voucher.router");
 const bannerRouter = require("./router/banner.router");
 const categoryToProductRouter = require('./router/categoryToProduct');
+const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
 
 app.use(cors({
@@ -25,6 +26,7 @@ app.use('/order', orderRouter);
 app.use('/voucher', voucherRouter);
 app.use('/banner', bannerRouter);
 app.use('/category/products', categoryToProductRouter);
+app.use('/rating', rating);
 
 dbConnection();
 
