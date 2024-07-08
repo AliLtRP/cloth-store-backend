@@ -78,7 +78,28 @@ async function updateDiscount(req, res) {
 }
 
 async function deleteDiscount(req, res) {
+    const { id } = req.query;
+    const { status } = req.body;
 
+    try {
+        const query = `UPDATE "discount"
+        SET active=$1
+        WHERE id=${id}`;
+
+        const value = [status];
+
+        const result = await client.query(query, value);
+
+        return res.status(200).send({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (e) {
+        return res.status(501).send({
+            success: false,
+            error: e
+        });
+    }
 }
 
 module.exports = { discountRouter, getAllDiscount, getDiscountById, updateDiscount, deleteDiscount }
