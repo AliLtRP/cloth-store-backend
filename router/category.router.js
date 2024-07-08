@@ -12,9 +12,9 @@ router.get('/all', getAllCategory);
 router.post('/', createCategory);
 
 // update category 
-router.put('/', updateCategory);
+router.put('/update', updateCategory);
 
 // soft delete category 
-router.delete('/', deleteCategory);
+router.delete('/delete', deleteCategory);
 
 module.exports = router

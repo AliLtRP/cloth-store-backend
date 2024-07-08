@@ -1,14 +1,16 @@
 const { client } = require('../database');
 
 async function voucherRouter(req, res) {
+
     const { value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active } = req.body;
 
     try {
+
         const query = `
-        INSERT INTO "voucher" (value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING id;
-        `;
+        INSERT INTO "voucher" (value,type , start_date , end_date ,max_amount , min_amount ,apply_over_discount,no_of_usage , users , first_order , active)
+        VALUE(${value},${type},${start_date},${end_date},${max_amount},${min_amount},${apply_over_discount},${users},${first_order},${active}) 
+        RETURNING id;     
+        `
         const values = [value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active];
         const result = await client.query(query, values);
 
@@ -19,12 +21,12 @@ async function voucherRouter(req, res) {
     }
 }
 
-async function getAllVouchers(req,res){
+async function getAllVouchers(req, res) {
     try {
         const query = 'SELECT * FROM voucher';
         const result = await client.query(query);
 
-        if(result.rows.length===0){
+        if (result.rows.length === 0) {
             return res.status(404).json({ message: 'No vouchers found' });
         }
         res.status(200).json(result.rows);
@@ -34,36 +36,36 @@ async function getAllVouchers(req,res){
     }
 }
 
-async function getVoucherById(req,res){
-    const {id} = req.query;
+async function getVoucherById(req, res) {
+    const { id } = req.query;
 
     try {
-        const query='SELECT * FROM "voucher" WHERE id = $1'
+        const query = 'SELECT * FROM "voucher" WHERE id = $1'
         const values = [id];
-        const result = await client.query(query,values);
+        const result = await client.query(query, values);
 
-        if(result.rows.length===0){
-            return res.status(404).json({message:'voucher not found'});
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'voucher not found' });
         }
         res.status(200).json(result.rows[0]);
-    } catch(error) {
+    } catch (error) {
         console.error('Error retrieving specific voucher:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
-async function updateVoucher(req,res){
-    const {id} = req.query;
+async function updateVoucher(req, res) {
+    const { id } = req.query;
 
-    const {value , type , start_date , end_date ,max_amount , min_amount ,apply_over_discount,no_of_usage , users , first_order , active}=req.body;
+    const { value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active } = req.body;
 
-    try{
-       const query = `
+    try {
+        const query = `
         UPDATE "voucher"
         SET value = $1, type = $2, start_date = $3, end_date = $4, max_amount = $5, min_amount = $6, apply_over_discount = $7, no_of_usage = $8, users = $9, first_order = $10, active = $11
         WHERE id = $12
         RETURNING id;
-        `; 
+        `;
 
         const values = [value, type, start_date, end_date, max_amount, min_amount, apply_over_discount, no_of_usage, users, first_order, active, id];
         const result = await client.query(query, values);
@@ -77,10 +79,10 @@ async function updateVoucher(req,res){
         console.error('Error updating voucher:', error);
         res.status(500).json({ error: 'Failed to update voucher' });
     }
-    
+
 }
-async function deleteVoucher(req,res){
+async function deleteVoucher(req, res) {
 
 }
 
-module.exports= {voucherRouter,getAllVouchers,getVoucherById,updateVoucher};
+module.exports = { voucherRouter, getAllVouchers, getVoucherById };
