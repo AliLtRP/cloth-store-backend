@@ -85,4 +85,4 @@ async function deleteVoucher(req, res) {
 
 }
 
-module.exports = { voucherRouter, getAllVouchers, getVoucherById };
+module.exports = { voucherRouter, getAllVouchers, getVoucherById,updateVoucher };
