@@ -33,7 +33,7 @@ async function orderRouter(req, res) {
          RETURNING *;
         `;
 
-        const values = [items, address, phone, total_price, city, country, statuscode, user_id];
+        const values = [items, address, phone, finalTotalPrice, city, country, statuscode, user_id];
         const result = await client.query(query, values)
 
         const orderId = result.rows[0].id;
@@ -147,7 +147,28 @@ async function updateOrder(req, res) {
 }
 
 async function deleteOrder(req, res) {
+    const { id } = req.query;
+    const { status } = req.body;
 
+    try {
+        const query = `UPDATE "order"
+        SET statuscode=$1
+        WHERE id=${id}`;
+
+        const value = [status];
+
+        const result = await client.query(query, value);
+
+        return res.status(200).send({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (e) {
+        return res.status(501).send({
+            success: false,
+            error: e
+        });
+    }
 }
 
 module.exports = { orderRouter, getRecentOrder, getAllOrders, updateOrder, deleteOrder, getOrderById };
