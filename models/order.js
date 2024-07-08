@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
 const { client } = require('../database');
 
-async function orderRouter(req,res){
-    const {items , address , phone , total_price,city,country,statusCode} = req.body;
+async function orderRouter(req, res) {
+    const { items, address, phone, total_price, city, country, statusCode } = req.body;
 
     try {
 
         // const itemsJson = JSON.stringify(items);
 
-        const userId=req.user.id;
+        const userId = req.user.id;
 
         const query = `
         INSERT INTO "order" (items, address, phone, total_price, city, country, statusCode, userId)
@@ -16,13 +16,13 @@ async function orderRouter(req,res){
          RETURNING id;
         `
 
-        const values = [items, address , phone , total_price,city,country,statusCode,userId];
-        const result=await client.query(query,values)
+        const values = [items, address, phone, total_price, city, country, statusCode, userId];
+        const result = await client.query(query, values)
 
-        const orderId=result.rows[0].id;
+        const orderId = result.rows[0].id;
 
         res.status(201).json({ orderId, message: 'Order placed successfully' });
-    } catch (error){
+    } catch (error) {
 
         console.error('Error placing order:', error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -30,7 +30,7 @@ async function orderRouter(req,res){
 
 }
 
-async function getRecentOrder(req,res){
+async function getRecentOrder(req, res) {
 
     const userId = req.user.id;
 
@@ -44,7 +44,7 @@ async function getRecentOrder(req,res){
         `;
 
         const values = [userId];
-        const result = await client.query(query,values);
+        const result = await client.query(query, values);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'No orders found' });
@@ -60,7 +60,7 @@ async function getRecentOrder(req,res){
 }
 
 
-async function getAllOrders(req,res){
+async function getAllOrders(req, res) {
 
     const userId = req.user.id;
 
@@ -71,7 +71,7 @@ async function getAllOrders(req,res){
                        ORDER BY created_at DESC `;
 
         const values = [userId];
-        const result = await client.query(query,values);
+        const result = await client.query(query, values);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'No orders found' });
@@ -86,21 +86,21 @@ async function getAllOrders(req,res){
     }
 }
 
-async function updateOrder(req,res){
+async function updateOrder(req, res) {
 
-    const {id} = req.query;
+    const { id } = req.query;
 
-    try{
-        const query =`
+    try {
+        const query = `
 
         `;
-    }catch(error){}
+    } catch (error) { }
 
 
 }
 
-async function deleteOrder (req,res){
+async function deleteOrder(req, res) {
 
 }
 
-module.exports={orderRouter,getRecentOrder,getAllOrders,updateOrder,deleteOrder};
+module.exports = { orderRouter, getRecentOrder, getAllOrders, updateOrder, deleteOrder };
