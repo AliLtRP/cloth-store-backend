@@ -71,7 +71,7 @@ async function updateVoucher(req, res) {
         const result = await client.query(query, values);
 
         if (result.rowCount > 0) {
-            res.status(200).json({ message: 'Voucher updated successfully' });
+            res.status(200).json({ message: 'Voucher updated successfully', data: result.rows[0] });
         } else {
             res.status(404).json({ error: 'Voucher not found' });
         }
@@ -81,8 +81,9 @@ async function updateVoucher(req, res) {
     }
 
 }
+
 async function deleteVoucher(req, res) {
 
 }
 
-module.exports = { voucherRouter, getAllVouchers, getVoucherById,updateVoucher };
+module.exports = { voucherRouter, getAllVouchers, getVoucherById, updateVoucher, deleteVoucher };

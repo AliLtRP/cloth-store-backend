@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const { client } = require('../database');
 
 async function orderRouter(req, res) {
@@ -11,21 +10,27 @@ async function orderRouter(req, res) {
             const voucherQuery = `
             SELECT type , value
             FROM voucher
-            WHERE id = 1$
+            WHERE id = $1
             `;
 
-            voucherResult = await client.query(voucherQuery, [voucher_id])
+            const val = [voucher_id];
+
+            const voucherResult = await client.query(voucherQuery, val);
+
+            console.log(voucherResult.rows[0], "voucher result");
 
             if (voucherResult.rows.length > 0) {
 
                 const { type, value } = voucherResult.rows[0];
-                if (type == number) {
+                if (type == "number") {
                     finalTotalPrice -= value;
-                } else if (type == percentage) {
-                    finalTotalPrice -= (total_price * value) / 100;
+                } else if (type == "percentage") {
+                    finalTotalPrice -= (total_price * value.slice(0, 2)) / 100;
                 }
             }
         }
+
+        // console.log(finalTotalPrice);
 
         const query = `
         INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
@@ -33,7 +38,7 @@ async function orderRouter(req, res) {
          RETURNING *;
         `;
 
-        const values = [items, address, phone, finalTotalPrice, city, country, statuscode, user_id];
+        const values = [items, address, phone, Math.floor(finalTotalPrice), city, country, statuscode, user_id];
         const result = await client.query(query, values)
 
         const orderId = result.rows[0].id;
