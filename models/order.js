@@ -3,6 +3,9 @@ const { client } = require('../database');
 async function orderRouter(req, res) {
     const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
 
+
+    const discountApply = await isDiscountValid(items);
+
     try {
         let finalTotalPrice = total_price;
 
@@ -29,8 +32,6 @@ async function orderRouter(req, res) {
                 }
             }
         }
-
-        // console.log(finalTotalPrice);
 
         const query = `
         INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
@@ -175,5 +176,56 @@ async function deleteOrder(req, res) {
         });
     }
 }
+
+async function isDiscountValid(items) {
+    const query = `
+    SELECT product.*, discount.* 
+    FROM product 
+    JOIN discount ON product.discount_id = discount.id 
+    WHERE product.id = $1
+  `;
+    const currentDate = new Date();
+
+    console.log(items);
+
+    for (let index = 0; index < items.length; index++) {
+        const values = [items[index].id];
+        const price = items[index].price;
+
+        console.log(price, 'before');
+
+        if (items[index].discount_id == null) {
+            return
+        }
+
+        try {
+            const result = await client.query(query, values);
+
+            if (result.rows.length === 0) {
+                throw new Error('Discount not found');
+            }
+
+            const discountEndDate = new Date(result.rows[0].end_date);
+
+            if (currentDate <= discountEndDate) {
+                const { type, value } = result.rows[0];
+                if (type == "number") {
+                    items[index].price -= value;
+                } else if (type == "%") {
+                    items[index].price -= (price * value.slice(0, 2)) / 100;
+                }
+
+                console.log(items[index].price, 'after');
+                return true;
+            }
+
+            return false;
+        } catch (e) {
+            console.log(e);
+            throw new Error('Cannot find discount');
+        }
+    }
+}
+
 
 module.exports = { orderRouter, getRecentOrder, getAllOrders, updateOrder, deleteOrder, getOrderById };

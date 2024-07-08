@@ -84,14 +84,14 @@ async function updateVoucher(req, res) {
 
 async function deleteVoucher(req, res) {
     const { id } = req.query;
-    const { status } = req.body;
+    const { actuve } = req.body;
 
     try {
         const query = `UPDATE "voucher"
         SET active=$1
         WHERE id=${id}`;
 
-        const value = [status];
+        const value = [actuve];
 
         const result = await client.query(query, value);
 
