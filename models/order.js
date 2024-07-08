@@ -1,52 +1,64 @@
 const jwt = require("jsonwebtoken");
 const { client } = require('../database');
 
-async function orderRouter(req,res){
-    const {items , address , phone , total_price,city,country,statuscode,user_id,voucher_id} = req.body;
+async function orderRouter(req, res) {
+    const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
 
     try {
+        let finalTotalPrice = total_price;
 
-        let finalTotalPrice=total_price;
-
-        if (voucher_id){
+        if (voucher_id) {
             const voucherQuery = `
-            SELECT type , value
-            FROM voucher
-            WHERE id = 1$
+                SELECT type, value, no_of_usage
+                FROM voucher
+                WHERE id = $1
             `;
 
-            voucherResult = await client.query(voucherQuery,[voucher_id])
+            const voucherResult = await client.query(voucherQuery, [voucher_id]);
 
-            if(voucherResult.rows.length>0){
+            if (voucherResult.rows.length > 0) {
+                const { type, value, no_of_usage } = voucherResult.rows[0];
 
-                const {type , value} = voucherResult.rows[0];
-                if(type==number){
+                if (no_of_usage == 0) {
+                    return res.status(400).json({ message: 'Voucher usage limit exceeded' });
+                }
+
+                if (type === "number") {
                     finalTotalPrice -= value;
-                }else if (type==percentage){
+                } else if (type === "percentage") {
                     finalTotalPrice -= (total_price * value) / 100;
                 }
+
+                const updateUsageNum = `
+                    UPDATE "voucher"
+                    SET no_of_usage = no_of_usage - 1
+                    WHERE id = $1
+                `;
+
+                await client.query(updateUsageNum, [voucher_id]);
+            } else {
+                return res.status(400).json({ message: 'Invalid voucher' });
             }
         }
 
-        const query = `
-        INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING id;
-        `
+        const orderQuery = `
+            INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id;
+        `;
 
-        const values = [items, address , phone , finalTotalPrice ,city,country,statuscode ,user_id];
-        const result=await client.query(query,values)
+        const values = [items, address, phone, finalTotalPrice, city, country, statuscode, user_id];
+        const orderResult = await client.query(orderQuery, values);
 
-        const orderId=result.rows[0].id;
+        const orderId = orderResult.rows[0].id;
 
         res.status(201).json({ orderId, message: 'Order placed successfully' });
-    } catch (error){
-
+    } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
-
 }
+
 
 async function getRecentOrder(req,res){
 
@@ -91,7 +103,7 @@ async function getAllOrders(req,res){
             return res.status(404).json({ message: 'No orders found' });
         }
 
-        res.status(200).json(result.rows[0]);
+        res.status(200).json(result.rows);
 
 
     } catch (error) {
