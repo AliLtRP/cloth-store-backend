@@ -6,6 +6,9 @@ const {bannerRouter,getAllBanners,updateBanner,getBannerById,deleteBanner} = req
 router.post('/' , bannerRouter);
 router.get('/all',getAllBanners);
 router.get('/',getBannerById);
-router.put('/',updateBanner);
+router.put('/update',updateBanner);
+router.delete('/delete',deleteBanner);
+
+
 
 module.exports = router;
