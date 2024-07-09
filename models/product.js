@@ -139,4 +139,45 @@ async function deleteProduct(req, res) {
 }
 
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct }
+async function getTopRatedProduct(req, res) {
+    try {
+        const query = `SELECT 
+    p.id,
+    p.name,
+    p.img,
+    p.description,
+    p.price,
+    p.stock,
+    p.status,
+    p.options,
+    p.discount_id,
+    p.created_at,
+    p.updated_at,
+    AVG(r.rate_value) AS average_rating
+FROM 
+    product p
+JOIN 
+    rating r ON p.id = r.product_id
+WHERE 
+    r.active = true
+GROUP BY 
+    p.id
+ORDER BY 
+    average_rating DESC
+`;
+
+        const result = await client.query(query);
+
+        return res.status(200).send({
+            success: true,
+            data: result.rows
+        });
+    } catch (e) {
+        return res.status(501).send({
+            success: false,
+            error: e
+        });
+    }
+}
+
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct }

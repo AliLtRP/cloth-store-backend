@@ -51,7 +51,7 @@ async function getCategory(req, res) {
 
 async function getAllCategory(req, res) {
     try {
-        const query = ` SELECT * FROM "category"`;
+        const query = ` SELECT * FROM "category" ;`;
 
         const result = await client.query(query);
 
