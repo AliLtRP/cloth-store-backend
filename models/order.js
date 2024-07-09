@@ -1,16 +1,13 @@
 const jwt = require("jsonwebtoken");
 const { client } = require('../database');
 
-async function orderRouter(req, res) {
-    const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
+
 async function orderRouter(req, res) {
     const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
 
     try {
         let finalTotalPrice = total_price;
-        let finalTotalPrice = total_price;
 
-        if (voucher_id) {
         if (voucher_id) {
             const voucherQuery = `
                 SELECT type, value, no_of_usage
