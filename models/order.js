@@ -3,50 +3,62 @@ const { client } = require('../database');
 async function orderRouter(req, res) {
     const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
 
-
     const discountApply = await isDiscountValid(items);
 
-    try {
-        let finalTotalPrice = total_price;
+    console.log(discountApply);
 
+    try {
         if (voucher_id) {
-            const voucherQuery = `
-            SELECT type , value
-            FROM voucher
-            WHERE id = $1
+            let finalTotalPrice = total_price;
+
+            if (voucher_id) {
+                const voucherQuery = `
+                SELECT type, value, no_of_usage
+                FROM voucher
+                WHERE id = $1
             `;
 
-            const val = [voucher_id];
+                const voucherResult = await client.query(voucherQuery, [voucher_id]);
 
-            const voucherResult = await client.query(voucherQuery, val);
+                if (voucherResult.rows.length > 0) {
+                    const { type, value, no_of_usage } = voucherResult.rows[0];
 
-            console.log(voucherResult.rows[0], "voucher result");
+                    if (no_of_usage == 0) {
+                        return res.status(400).json({ message: 'Voucher usage limit exceeded' });
+                    }
 
-            if (voucherResult.rows.length > 0) {
+                    if (type === "number") {
+                        finalTotalPrice -= value;
+                    } else if (type == "percentage") {
+                        finalTotalPrice -= (total_price * value.slice(0, 2)) / 100;
+                    }
 
-                const { type, value } = voucherResult.rows[0];
-                if (type == "number") {
-                    finalTotalPrice -= value;
-                } else if (type == "percentage") {
-                    finalTotalPrice -= (total_price * value.slice(0, 2)) / 100;
+                    const updateUsageNum = `
+                    UPDATE "voucher"
+                    SET no_of_usage = no_of_usage - 1
+                    WHERE id = $1
+                `;
+
+                    await client.query(updateUsageNum, [voucher_id]);
+                } else {
+                    return res.status(400).json({ message: 'Invalid voucher' });
                 }
             }
-        }
 
-        const query = `
-        INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING *;
+            const orderQuery = `
+            INSERT INTO "order" (items, address, phone, total_price, city, country, statuscode, user_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id;
         `;
 
-        const values = [items, address, phone, Math.floor(finalTotalPrice), city, country, statuscode, user_id];
-        const result = await client.query(query, values)
+            const values = [items, address, phone, finalTotalPrice, city, country, statuscode, user_id];
+            const orderResult = await client.query(orderQuery, values);
 
-        const orderId = result.rows[0].id;
+            const orderId = orderResult.rows[0].id;
 
-        res.status(201).json({ orderId, message: 'Order placed successfully' });
+            res.status(201).json({ orderId, message: 'Order placed successfully' });
+        }
     } catch (error) {
-
         console.error('Error placing order:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -188,7 +200,7 @@ async function isDiscountValid(items) {
 
     console.log(items);
 
-    for (let index = 0; index < items.length; index++) {
+    for (let index = 0; index <= items.length; index++) {
         const values = [items[index].id];
         const price = items[index].price;
 

@@ -22,8 +22,7 @@ async function getAllDiscount(req, res) {
 
     try {
         const query = `
-        SELECT * FROM "discount";
-        `;
+        SELECT * FROM "discount" `;
 
         const result = await client.query(query);
         res.status(200).json({ message: 'All discounts shown successfully', data: result.rows });
