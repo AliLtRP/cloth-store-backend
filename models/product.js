@@ -180,4 +180,34 @@ ORDER BY
     }
 }
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct }
+async function fetchProductsByIds(ids) {
+    if (ids.length === 0) {
+      return []; 
+    }
+
+    const query = `SELECT * FROM product WHERE id = ANY($1::int[]) ORDER BY id ASC`;
+
+    try{
+        const res = await client.query(query,[ids]);
+        return res.rows;
+    }catch(err){
+        console.error('Error executing query', err.stack);
+        throw err;
+    }
+}
+async function getSpecificProductId(req,res) {
+    try{
+    const ids = req.body.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'Invalid or missing IDs in the request body' });
+      }
+    const products = await fetchProductsByIds(ids);
+    res.json(products);
+    }
+     catch (err) {
+    console.error('Error fetching specific product IDs', err);
+    res.status(500).send('Error fetching specific product IDs');
+  }}
+
+
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct,getSpecificProductId }
