@@ -191,23 +191,20 @@ async function deleteOrder(req, res) {
 
 async function isDiscountValid(items) {
     const query = `
-    SELECT product.*, discount.* 
-    FROM product 
-    JOIN discount ON product.discount_id = discount.id 
-    WHERE product.id = $1
-  `;
+        SELECT product.*, discount.* 
+        FROM product 
+        JOIN discount ON product.discount_id = discount.id 
+        WHERE product.id = $1
+    `;
     const currentDate = new Date();
 
-    console.log(items);
+    for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        const values = [item.id];
 
-    for (let index = 0; index <= items.length; index++) {
-        const values = [items[index].id];
-        const price = items[index].price;
-
-        console.log(price, 'before');
-
-        if (items[index].discount_id == null) {
-            return
+        if (item.discount_id == null) {
+            item.discounted_price = item.price;
+            continue;
         }
 
         try {
@@ -217,27 +214,32 @@ async function isDiscountValid(items) {
                 throw new Error('Discount not found');
             }
 
-            const discountEndDate = new Date(result.rows[0].end_date);
+            const discount = result.rows[0];
+            const discountEndDate = new Date(discount.end_date);
 
             if (currentDate <= discountEndDate) {
-                const { type, value } = result.rows[0];
-                if (type == "number") {
-                    items[index].price -= value;
-                } else if (type == "%") {
-                    items[index].price -= (price * value.slice(0, 2)) / 100;
+                const { type, value } = discount;
+
+                if (type === "number") {
+                    item.discounted_price = item.price - value;
+                } else if (type === "%") {
+                    item.discounted_price = item.price - (item.price * Math.floor(value)) / 100;
                 }
-
-                console.log(items[index].price, 'after');
-                return true;
+                item.type = type;
+                item.value = value;
+            } else {
+                item.discounted_price = item.price;
             }
-
-            return false;
         } catch (e) {
-            console.log(e);
+            console.log(e.message);
             throw new Error('Cannot find discount');
         }
     }
+
+    return items;
 }
 
 
-module.exports = { orderRouter, getRecentOrder, getAllOrders, updateOrder, deleteOrder, getOrderById };
+
+
+module.exports = { orderRouter, getRecentOrder, getAllOrders, updateOrder, deleteOrder, getOrderById, isDiscountValid };

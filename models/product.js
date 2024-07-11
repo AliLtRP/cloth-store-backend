@@ -1,4 +1,5 @@
 const { client } = require('../database');
+const { isDiscountValid } = require('./order');
 
 
 async function createProduct(req, res) {
@@ -180,4 +181,31 @@ ORDER BY
     }
 }
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct }
+
+async function fetchDiscountedProducts(req, res) {
+    const query = `SELECT p.*
+                   FROM "product" p
+                   JOIN "discount" d ON p.discount_id = d.id`;
+
+    try {
+        const result = await client.query(query);
+
+        const discountProduct = await isDiscountValid(result.rows);
+
+        return res.status(200).send({
+            success: true,
+            data: discountProduct
+        })
+    } catch (error) {
+        console.error('Error fetching discounted products:', error);
+        res.status(501).send({
+            success: false,
+            error: error
+        })
+        throw error;
+    }
+}
+
+
+
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts }
