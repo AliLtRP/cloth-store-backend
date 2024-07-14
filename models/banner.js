@@ -2,15 +2,15 @@ const { client } = require('../database');
 // const { fetchProductsByIds } = require('./product');
 
 async function bannerRouter(req, res) {
-    const { title, img, description, priority, type, discount, products_ids, banners, active } = req.body;
+    const { title, img, description, priority, type, discount, products_ids, banners, active, start_date, end_date } = req.body;
 
     try {
         const query = `
-        INSERT INTO "banner" (title,img , description , priority ,type  , discount  ,products_ids,banners , active)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) 
+        INSERT INTO "banner" (title,img , description , priority ,type  , discount  ,products_ids,banners , active, start_date, end_date)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9, $10, $11) 
         RETURNING id;     
         `;
-        const values = [title, img, description, priority, type, discount, products_ids, banners, active];
+        const values = [title, img, description, priority, type, discount, products_ids, banners, active, start_date, end_date];
         const result = await client.query(query, values);
 
         res.status(201).json({ message: 'banner added successfully', bannerId: result.rows[0].id });
