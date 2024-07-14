@@ -13,7 +13,7 @@ const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
 
 app.use(cors({
-    origin: ["*"],
+    origin: ["https://6693d8c84b9eb45a49f31bb5--spiffy-fox-78a08a.netlify.app/"],
     credentials: true,
     exposedHeaders: ["Authorization"],
 }));
