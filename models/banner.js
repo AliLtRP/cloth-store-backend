@@ -1,11 +1,9 @@
 const { client } = require('../database');
 
 async function bannerRouter(req, res) {
-
     const { title, img, description, priority, type, discount, products_ids, banners, active } = req.body;
 
     try {
-
         const query = `
         INSERT INTO "banner" (title,img , description , priority ,type  , discount  ,products_ids,banners , active)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) 

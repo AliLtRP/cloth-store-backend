@@ -42,6 +42,8 @@ async function getAllProductsAttachToCategory(req, res) {
 
         const result = await client.query(query, values);
 
+        console.log(result.rows);
+
         return res.status(200).send({
             success: true,
             data: result.rows

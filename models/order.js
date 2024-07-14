@@ -1,11 +1,12 @@
 const { client } = require('../database');
 
+
 async function orderRouter(req, res) {
     const { items, address, phone, total_price, city, country, statuscode, user_id, voucher_id } = req.body;
 
     const discountApply = await isDiscountValid(items);
 
-    console.log(discountApply);
+    // console.log(discountApply);
 
     try {
         if (voucher_id) {
@@ -108,6 +109,7 @@ async function getAllOrders(req, res) {
             return res.status(404).json({ message: 'No orders found' });
         }
 
+        res.status(200).json(result.rows);
         res.status(200).json(result.rows);
 
 

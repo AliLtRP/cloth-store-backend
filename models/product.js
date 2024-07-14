@@ -1,4 +1,5 @@
 const { client } = require('../database');
+const { getBannerById } = require('./banner');
 const { isDiscountValid } = require('./order');
 
 
@@ -208,4 +209,45 @@ async function fetchDiscountedProducts(req, res) {
 
 
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts }
+async function fetchProductsByIds(ids) {
+    if (ids.length === 0) {
+        return [];
+    }
+
+    const query = `SELECT * FROM product WHERE id = ANY($1::int[]) ORDER BY id ASC`;
+
+    try {
+        const res = await client.query(query, [ids]);
+        return res.rows;
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        throw err;
+    }
+}
+async function getSpecificProductId(req, res) {
+    try {
+        const { id } = req.body;
+        console.log(id);
+
+        const query = 'SELECT * FROM "banner" WHERE id = $1';
+        const values = [id];
+        const result = await client.query(query, values);
+
+        console.log(result.rows[0].products_ids);
+
+        const products = await fetchProductsByIds(result.rows[0].products_ids);
+
+        console.log(products);
+        res.json({
+            success: true,
+            data: products
+        });
+    }
+    catch (err) {
+        console.error('Error fetching specific product IDs', err);
+        res.status(500).send('Error fetching specific product IDs');
+    }
+}
+
+
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts, getSpecificProductId }
