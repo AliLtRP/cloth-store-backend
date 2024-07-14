@@ -28,7 +28,7 @@ async function login(req, res) {
 
     try {
         const query = `SELECT * FROM "user" WHERE username = $1 OR email= $1`;
-        const result = await client.query(query , [username_or_email]);
+        const result = await client.query(query, [username_or_email]);
 
         if (result.rows.length === 0) {
             return res.status(400).send("User was not found");
@@ -42,7 +42,6 @@ async function login(req, res) {
         if (!match) {
             return res.status(400).send("Invalid Password");
         }
-        // using JWT which are json web tokens to authorize users
 
         const token = jwt.sign(
             { id: user.id, email: user.email },
@@ -50,8 +49,7 @@ async function login(req, res) {
             { expiresIn: '1h' }
         );
 
-        console.log(token);
-        return res.status(200).send({ success: true,token });
+        return res.status(200).send({ success: true, token });
     } catch (e) {
         console.log(e);
         return res.status(400).send(e);

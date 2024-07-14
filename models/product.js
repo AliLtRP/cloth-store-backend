@@ -210,6 +210,7 @@ async function fetchDiscountedProducts(req, res) {
 
 
 async function fetchProductsByIds(ids) {
+    console.log(ids, 'ids');
     if (ids.length === 0) {
         return [];
     }
@@ -224,6 +225,7 @@ async function fetchProductsByIds(ids) {
         throw err;
     }
 }
+
 async function getSpecificProductId(req, res) {
     try {
         const { id } = req.body;
@@ -250,4 +252,4 @@ async function getSpecificProductId(req, res) {
 }
 
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts, getSpecificProductId }
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts, getSpecificProductId, fetchProductsByIds }

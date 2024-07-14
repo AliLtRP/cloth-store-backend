@@ -1,4 +1,5 @@
 const { client } = require('../database');
+// const { fetchProductsByIds } = require('./product');
 
 async function bannerRouter(req, res) {
     const { title, img, description, priority, type, discount, products_ids, banners, active } = req.body;
@@ -8,7 +9,7 @@ async function bannerRouter(req, res) {
         INSERT INTO "banner" (title,img , description , priority ,type  , discount  ,products_ids,banners , active)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) 
         RETURNING id;     
-        `
+        `;
         const values = [title, img, description, priority, type, discount, products_ids, banners, active];
         const result = await client.query(query, values);
 
@@ -19,14 +20,38 @@ async function bannerRouter(req, res) {
     }
 }
 
+
+async function fetchProductsByIds(ids) {
+    if (ids.length === 0) {
+        return [];
+    }
+
+    const query = `SELECT * FROM product WHERE id = ANY($1::int[]) ORDER BY id ASC LIMIT 8`;
+
+    try {
+        const res = await client.query(query, [ids]);
+        return res.rows;
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        throw err;
+    }
+}
+
 async function getAllBanners(req, res) {
     try {
         const query = `SELECT * FROM "banner";`;
         const result = await client.query(query);
+
+        for (let i = 0; i < result.rows.length; i++) {
+            if (result.rows[i].products_ids) {
+                result.rows[i].products_ids = await fetchProductsByIds(result.rows[i].products_ids);
+            }
+        }
+
         res.status(200).send({
             success: true,
             data: result.rows
-        })
+        });
     } catch (error) {
         console.error('Error retrieving banners:', error);
         res.status(500).json({ error: 'Failed to retrieve banners' });
@@ -105,6 +130,6 @@ async function deleteBanner(req, res) {
             error: e
         });
     }
-
 }
+
 module.exports = { bannerRouter, getAllBanners, updateBanner, getBannerById, deleteBanner };
