@@ -14,9 +14,9 @@ const { dbConnection } = require('./database');
 const port = process.env.PORT
 
 app.use(cors({
-    origin: ["https://6694dc344b9eb44ccff31e30--spiffy-fox-78a08a.netlify.app"],
+    origin: ["*"],
     credentials: true,
-    exposedHeaders: ["Authorization"],
+    exposedHeaders: ["Authorization", "Content-Type"],
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use('/', router);
@@ -31,4 +31,4 @@ app.use('/rating', rating);
 
 dbConnection();
 
-app.listen(port, () => console.log("app is running on port 3000"));
+app.listen(port, () => console.log(`app is running on port ${port}`));
