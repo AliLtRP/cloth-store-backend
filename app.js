@@ -11,24 +11,13 @@ const bannerRouter = require("./router/banner.router");
 const categoryToProductRouter = require('./router/categoryToProduct');
 const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
-const port = process.env.PORT || 5000; // Ensure default port if not set in env
-
-const allowedOrigins = [
-    'https://6694e1c8951df551e51e0425--extraordinary-alfajores-5bd0b2.netlify.app',
-];
+const port = process.env.PORT
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: ["*"],
     credentials: true,
     exposedHeaders: ["Authorization", "Content-Type"],
 }));
-
 app.use(express.json({ limit: "10mb" }));
 app.use('/', router);
 app.use('/category', categoryRouter);
