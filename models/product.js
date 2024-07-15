@@ -44,21 +44,65 @@ async function getProduct(req, res) {
     const { id } = req.query;
 
     try {
-        const query = `SELECT * FROM "product" WHERE id=${id}`;
+        const productQuery = `SELECT * FROM "product" WHERE id=$1`;
+        const productResult = await client.query(productQuery, [id]);
 
-        const result = await client.query(query);
+        if (productResult.rows.length === 0) {
+            return res.status(404).send({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        const product = productResult.rows[0];
+
+        let discount = null;
+        if (product.discount_id) {
+            const discountQuery = `SELECT * FROM "discount" WHERE id=$1`;
+            const discountResult = await client.query(discountQuery, [product.discount_id]);
+            if (discountResult.rows.length > 0) {
+                discount = discountResult.rows[0];
+            }
+        }
+
+        const ratingQuery = `
+            SELECT 
+                AVG(rate_value) AS average_rating 
+            FROM "rating" 
+            WHERE product_id=$1 AND active=true
+        `;
+        const ratingResult = await client.query(ratingQuery, [id]);
+        const averageRating = ratingResult.rows[0].average_rating;
+
+        let finalPrice = product.price;
+        if (discount) {
+            if (discount.type === '%') {
+                finalPrice -= (parseFloat(discount.value) / 100) * product.price;
+            } else {
+                finalPrice -= parseFloat(discount.value);
+            }
+            finalPrice = Math.max(finalPrice, 0);
+        }
 
         return res.status(200).send({
             success: true,
-            data: result.rows[0]
+            data: {
+                ...product,
+                final_price: finalPrice,
+                discount: discount,
+                average_rating: averageRating
+            }
         });
     } catch (e) {
+        console.error('Error fetching product', e);
         return res.status(501).send({
             success: false,
             error: e
         });
     }
 }
+
+
 
 async function getAllProducts(req, res) {
     try {
@@ -231,25 +275,75 @@ async function getSpecificProductId(req, res) {
         const { id } = req.body;
         console.log(id);
 
+        if (Array.isArray(id)) {
+            const result = await fetchProductsByIds(id);
+            const ratings = await getProductRating(id);
+            const productsWithRatings = result.map(product => {
+            const rating = ratings.find(r => r.product_id === product.id);
+            return { ...product, rating: rating ? rating.rate_value : null };
+        })
+            return res.status(200).send({
+                success: true,
+                data: productsWithRatings
+            });
+        }
+
         const query = 'SELECT * FROM "banner" WHERE id = $1';
         const values = [id];
         const result = await client.query(query, values);
 
-        console.log(result.rows[0].products_ids);
+        if (!result.rows.length) {
+            return res.status(404).json({ error: 'Banner not found' });
+        }
 
-        const products = await fetchProductsByIds(result.rows[0].products_ids);
+        const productIds = result.rows[0].products_ids.map(product => product.id);
+        const products = await fetchProductsByIds(productIds);
+        const ratings = await getProductRating(productIds);
 
-        console.log(products);
+        const productsWithRatings = products.map(product => {
+            const rating = ratings.find(r => r.product_id === product.id);
+            return { ...product, rating: rating ? rating.rate_value : null };
+        });
+
         res.json({
             success: true,
-            data: products
+            data: productsWithRatings
         });
-    }
-    catch (err) {
+    } catch (err) {
         console.error('Error fetching specific product IDs', err);
         res.status(500).send('Error fetching specific product IDs');
     }
 }
+
+
+async function getProductRating(ids) {
+    const query = `
+        SELECT 
+            p.id AS product_id,
+            p.name,
+            p.img,
+            p.description,
+            p.price,
+            r.rate_value
+        FROM 
+            product p 
+        JOIN 
+            rating r ON p.id = r.product_id 
+        WHERE 
+            p.id = ANY($1::int[])
+    `;
+
+    const values = [ids];
+
+    try {
+        const result = await client.query(query, values);
+        return result.rows;
+    } catch (e) {
+        console.error('Error executing query', e);
+        throw e;
+    }
+}
+
 
 
 module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts, getSpecificProductId, fetchProductsByIds }

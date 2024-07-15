@@ -53,16 +53,19 @@ async function fetchProductsByIds(ids) {
     try {
         const res = await client.query(query, [ids]);
         const products = res.rows.map(product => {
-            if (product.discount_id) {
-                let discountedPrice = product.price;
+            let finalPrice = product.price;
+            if (product.discount_id && product.discount_value !== null) {
                 if (product.discount_type === '%') {
-                    discountedPrice -= (product.discount_value / 100) * product.price;
+                    finalPrice -= (parseFloat(product.discount_value) / 100) * product.price;
                 } else {
-                    discountedPrice -= product.discount_value;
+                    finalPrice -= parseFloat(product.discount_value);
                 }
-                product.price = Math.max(discountedPrice, 0);
+                finalPrice = Math.max(finalPrice, 0);
             }
-            return product;
+            return {
+                ...product,
+                final_price: finalPrice
+            };
         });
         return products;
     } catch (err) {
@@ -92,6 +95,8 @@ async function getAllBanners(req, res) {
         res.status(500).json({ error: 'Failed to retrieve banners' });
     }
 }
+
+
 
 async function updateBanner(req, res) {
 
