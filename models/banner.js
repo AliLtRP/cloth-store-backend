@@ -26,16 +26,51 @@ async function fetchProductsByIds(ids) {
         return [];
     }
 
-    const query = `SELECT * FROM product WHERE id = ANY($1::int[]) ORDER BY id ASC LIMIT 8`;
+    const query = `
+        SELECT 
+            p.id,
+            p.name,
+            p.img,
+            p.description,
+            p.price,
+            p.stock,
+            p.status,
+            p.options,
+            d.id AS discount_id,
+            d.value AS discount_value,
+            d.type AS discount_type
+        FROM 
+            product p
+        LEFT JOIN 
+            discount d ON p.discount_id = d.id
+        WHERE 
+            p.id = ANY($1::int[])
+        ORDER BY 
+            p.id ASC 
+        LIMIT 8
+    `;
 
     try {
         const res = await client.query(query, [ids]);
-        return res.rows;
+        const products = res.rows.map(product => {
+            if (product.discount_id) {
+                let discountedPrice = product.price;
+                if (product.discount_type === '%') {
+                    discountedPrice -= (product.discount_value / 100) * product.price;
+                } else {
+                    discountedPrice -= product.discount_value;
+                }
+                product.price = Math.max(discountedPrice, 0);
+            }
+            return product;
+        });
+        return products;
     } catch (err) {
         console.error('Error executing query', err.stack);
         throw err;
     }
 }
+
 
 async function getAllBanners(req, res) {
     try {
