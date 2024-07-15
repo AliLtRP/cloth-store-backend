@@ -14,7 +14,7 @@ const { dbConnection } = require('./database');
 const port = process.env.PORT
 
 app.use(cors({
-    origin: ["*"],
+    origin: "https://6694dc344b9eb44ccff31e30--spiffy-fox-78a08a.netlify.app",
     credentials: true,
     exposedHeaders: ["Authorization", "Content-Type"],
 }));
