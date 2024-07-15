@@ -14,7 +14,7 @@ const { dbConnection } = require('./database');
 const port = process.env.PORT || 5000; // Ensure default port if not set in env
 
 const allowedOrigins = [
-    'https://6694dc344b9eb44ccff31e30--spiffy-fox-78a08a.netlify.app',
+    'https://6694e1c8951df551e51e0425--extraordinary-alfajores-5bd0b2.netlify.app',
 ];
 
 app.use(cors({
