@@ -11,7 +11,7 @@ const bannerRouter = require("./router/banner.router");
 const categoryToProductRouter = require('./router/categoryToProduct');
 const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 app.use(cors({
     origin: "*",

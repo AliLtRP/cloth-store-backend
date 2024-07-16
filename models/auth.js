@@ -5,8 +5,6 @@ const { client } = require('../database');
 async function register(req, res) {
     const { phone, email, avatar, username, password, active } = req.body
 
-    console.log(phone, email, avatar, username, password, active);
-
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -36,7 +34,6 @@ async function login(req, res) {
 
         const user = result.rows[0];
 
-        console.log(user);
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
@@ -56,5 +53,15 @@ async function login(req, res) {
     }
 }
 
+async function checkUser(req, res) {
+    const token = req.headers['authorization'];
 
-module.exports = { register, login };
+    try {
+        const user = jwt.decode(token);
+        res.status(200).send(user);
+    } catch (e) {
+        res.status(500).send('UnAuth');
+    }
+}
+
+module.exports = { register, login, checkUser };
