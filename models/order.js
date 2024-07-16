@@ -6,8 +6,6 @@ async function orderRouter(req, res) {
 
     const discountApply = await isDiscountValid(items);
 
-    // console.log(discountApply);
-
     try {
         let finalTotalPrice = total_price;
 
