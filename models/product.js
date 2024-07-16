@@ -271,47 +271,48 @@ async function fetchProductsByIds(ids) {
 }
 
 async function getSpecificProductId(req, res) {
-    try {
-        const { id } = req.body;
-        console.log(id);
+    const { id } = req.body;
 
-        if (Array.isArray(id)) {
-            const result = await fetchProductsByIds(id);
-            const ratings = await getProductRating(id);
+    try {
+        const ids = Array.isArray(id) ? id : [id];
+
+        if (ids.length === 1 && typeof ids[0] === 'number') {
+            const query = 'SELECT * FROM "banner" WHERE id = $1';
+            const values = [ids[0]];
+            const result1 = await client.query(query, values);
+
+            if (!result1.rows.length) {
+                return res.status(404).json({ error: 'Banner not found' });
+            }
+
+            const result = await fetchProductsByIds(result1.rows[0].products_ids);
+            const ratings = await getProductRating(ids);
             const productsWithRatings = result.map(product => {
-            const rating = ratings.find(r => r.product_id === product.id);
-            return { ...product, rating: rating ? rating.rate_value : null };
-        })
+                const rating = ratings.find(r => r.product_id === product.id);
+                return { ...product, rating: rating ? rating.rate_value : null };
+            });
+
+            
             return res.status(200).send({
                 success: true,
                 data: productsWithRatings
             });
         }
 
-        const query = 'SELECT * FROM "banner" WHERE id = $1';
-        const values = [id];
-        const result = await client.query(query, values);
-
-        if (!result.rows.length) {
-            return res.status(404).json({ error: 'Banner not found' });
-        }
-
-        const productIds = result.rows[0].products_ids.map(product => product.id);
-        const products = await fetchProductsByIds(productIds);
-        const ratings = await getProductRating(productIds);
-
-        const productsWithRatings = products.map(product => {
+        const result = await fetchProductsByIds(ids);
+        const ratings = await getProductRating(ids);
+        const productsWithRatings = result.map(product => {
             const rating = ratings.find(r => r.product_id === product.id);
             return { ...product, rating: rating ? rating.rate_value : null };
         });
 
-        res.json({
+        return res.status(200).send({
             success: true,
             data: productsWithRatings
         });
     } catch (err) {
         console.error('Error fetching specific product IDs', err);
-        res.status(500).send('Error fetching specific product IDs');
+        return res.status(500).send('Error fetching specific product IDs');
     }
 }
 
