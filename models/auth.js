@@ -22,8 +22,6 @@ async function register(req, res) {
 async function login(req, res) {
     const { username_or_email, password } = req.body;
 
-    console.log(username_or_email, password);
-
     try {
         const query = `SELECT * FROM "user" WHERE username = $1 OR email= $1`;
         const result = await client.query(query, [username_or_email]);
