@@ -13,6 +13,7 @@ const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
 const port = process.env.PORT
 
+
 app.use(cors({
     origin: "*",
     credentials: true,
