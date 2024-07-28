@@ -1,5 +1,4 @@
 const { client } = require('../database');
-const { getBannerById } = require('./banner');
 const { isDiscountValid } = require('./order');
 
 
