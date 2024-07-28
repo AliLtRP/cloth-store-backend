@@ -11,7 +11,7 @@ const bannerRouter = require("./router/banner.router");
 const categoryToProductRouter = require('./router/categoryToProduct');
 const rating = require('./router/rating.router');
 const { dbConnection } = require('./database');
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 
 app.use(cors({
@@ -31,5 +31,6 @@ app.use('/category/products', categoryToProductRouter);
 app.use('/rating', rating);
 
 dbConnection();
+
 
 app.listen(port, () => console.log(`app is running on port ${port}`));

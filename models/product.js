@@ -84,13 +84,18 @@ async function getProduct(req, res) {
             finalPrice = Math.max(finalPrice, 0);
         }
 
+
+
+        const relatedItemsResult = await relatedProducts(id);
+
         return res.status(200).send({
             success: true,
             data: {
                 ...product,
                 final_price: finalPrice,
                 discount: discount,
-                average_rating: averageRating
+                average_rating: averageRating,
+                related_items: relatedItemsResult
             }
         });
     } catch (e) {
@@ -292,7 +297,7 @@ async function getSpecificProductId(req, res) {
                 return { ...product, rating: rating ? rating.rate_value : null };
             });
 
-            
+
             return res.status(200).send({
                 success: true,
                 data: productsWithRatings
@@ -345,6 +350,50 @@ async function getProductRating(ids) {
     }
 }
 
+async function relatedProducts(id) {
+    const relatedItemsQuery = `
+    SELECT 
+        p.id, 
+        p.name, 
+        p.description, 
+        p.price, 
+        p.img,
+        p.options,
+        p.discount_id,
+        COALESCE(
+            CASE 
+                WHEN d.type = '%' THEN p.price - (p.price * (d.value::numeric / 100)) 
+                ELSE p.price - d.value::numeric 
+            END, 
+            p.price
+        ) AS final_price,
+        d.value AS discount_value,
+        d.type AS discount_type,
+        COALESCE(AVG(r.rate_value), 0) AS average_rating
+    FROM 
+        "product" p
+    LEFT JOIN 
+        "discount" d ON p.discount_id = d.id
+    LEFT JOIN 
+        "rating" r ON p.id = r.product_id AND r.active = true
+    WHERE 
+        p.id IN (SELECT product_id FROM categoryToProduct WHERE category_id = (SELECT category_id FROM categoryToProduct WHERE product_id = $1))
+        AND p.id != $1
+    GROUP BY 
+        p.id, d.value, d.type
+    ORDER BY 
+        average_rating DESC
+    LIMIT 8;
+`;
+
+    try {
+        const relatedItemsResult = await client.query(relatedItemsQuery, [id]);
+
+        return relatedItemsResult.rows;
+    } catch (e) {
+        throw new Error("related product not fetched", e);
+    }
+}
 
 
 module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, getTopRatedProduct, fetchDiscountedProducts, getSpecificProductId, fetchProductsByIds }
