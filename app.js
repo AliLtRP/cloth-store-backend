@@ -32,5 +32,4 @@ app.use('/rating', rating);
 
 dbConnection();
 
-
 app.listen(port, () => console.log(`app is running on port ${port}`));
